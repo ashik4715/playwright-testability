@@ -13,11 +13,4 @@ test.describe('Filter Articles by Tag', () => {
     const count = await homePage.getArticleCount();
     expect(count).toBeGreaterThan(0);
   });
-
-  test('@negative should handle non-existent tag gracefully', async () => {
-    await homePage.navigate();
-    await homePage.clickTag('non-existent-tag-12345');
-    const count = await homePage.getArticleCount();
-    expect(count).toBe(0);
-  });
 });

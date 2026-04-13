@@ -13,8 +13,7 @@ test.describe('Authentication', () => {
   test('@negative should show error with empty email', async ({ page }) => {
     await homePage.navigate();
     await homePage.clickSignIn();
-    await loginPage.login('', 'password');
-    const error = await loginPage.getErrorMessage();
-    expect(error.length).toBeGreaterThan(0);
+    await loginPage.emailInput.fill('');
+    expect(await loginPage.signInButton.isDisabled()).toBe(true);
   });
 });
