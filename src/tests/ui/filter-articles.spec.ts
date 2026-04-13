@@ -13,4 +13,16 @@ test.describe('Filter Articles by Tag', () => {
     const count = await homePage.getArticleCount();
     expect(count).toBeGreaterThan(0);
   });
+
+  test('@positive should display popular tags', async () => {
+    await homePage.navigate();
+    const tags = await homePage.getPopularTags();
+    expect(tags.length).toBeGreaterThan(0);
+  });
+
+  test('@positive should display articles', async () => {
+    await homePage.navigate();
+    const titles = await homePage.getArticleTitles();
+    expect(titles.length).toBeGreaterThan(0);
+  });
 });
