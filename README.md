@@ -1,54 +1,80 @@
-# playwright-testability
-Project Overview: Build a robust Playwright framework using TypeScript to automate comprehensive end-to-end testing for the website: https://conduit.bondaracademy.com/.
+# Playwright E2E Testing Framework
 
-# Requirements:
-Implement the following scenarios, ensuring one positive test case for each:
+Comprehensive E2E testing framework for [Conduit](https://conduit.bondaracademy.com/) built with Playwright and TypeScript.
 
-# Create New Article
-## Edit Article
-(Create the article via API as a pre-condition)
+## Test Scenarios
 
-## Delete Article
-(Create the article via API as a pre-condition)
+- **Create New Article**: Positive + negative test cases
+- **Edit Article**: API pre-condition, positive + negative
+- **Delete Article**: API pre-condition, positive + negative  
+- **Filter Articles by Tag**: Tag filtering functionality
+- **Update User Settings**: Settings updates with validation
+- **Authentication**: Login flow with valid/invalid credentials
 
-## Filter Articles by Tag
-## Update User Settings
-## Key Considerations:
+## Features Implemented
 
-## QA-Driven Assertions:
-Ensure thorough validation with necessary assertions for each scenario. Focus on both UI and functional correctness to cover visual elements, success messages, redirects, and data persistence.
+| Feature | Status |
+|---------|--------|
+| Page Objects Pattern | ✅ |
+| Session Management | ✅ |
+| API Pre-conditions | ✅ |
+| Dynamic Test Data (faker) | ✅ |
+| Cross-browser (Chromium/Firefox/WebKit) | ✅ |
+| Parallel Execution | ✅ |
+| Test Traces & Screenshots | ✅ |
+| Allure Reports | ✅ |
+| GitHub Actions CI/CD | ✅ |
+| Negative Test Cases | ✅ |
 
-## Session Management:
-Reuse authenticated sessions to optimize performance and reduce test execution time. Implement session persistence to avoid repeated logins where applicable.
+## Project Structure
 
-## Best Practices:
-Follow industry-standard best practices for code structure, such as separating page objects, utilities, and test data. Focus on modularity, readability, and maintainability, allowing future scalability of the framework.
+```
+src/
+├── config/          # App constants
+├── test-data/      # Dynamic test data
+├── utils/          # API client, session manager
+├── page-objects/  # POM (Login, Home, Article, Settings)
+└── tests/ui/      # Test specs
+```
 
-## Resilient Tests:
-Ensure that tests are resilient against minor UI changes. Use flexible locators and retry mechanisms when needed to handle flakiness in dynamic web elements.
-Bonus Features:
+## Run Tests
 
-## Dynamic Test Data:
-Implement dynamic and randomized test data generation to avoid hard-coded inputs and increase test coverage across different input cases.
+```bash
+npm test                    # All tests
+npm run test:cross-browser # Multi-browser
+npm run test:parallel      # Parallel
+```
 
-## Readable Test Reports:
-Configure detailed and well-structured test reports (e.g., using Allure or HTML reports) to make it easier for teams to analyze failures, errors, and results.
+---
 
-## Negative Test Cases:
-Add at least one negative test case for each scenario. Test edge cases and invalid inputs to verify proper error handling, validation messages, and user feedback.
-Use AI tools [no blind of course]
+## Q&A Overview
 
-## Cross-Browser Testing:
-Where possible, configure the framework for cross-browser compatibility (Chromium, WebKit, and Firefox) to ensure the web application performs consistently across different browsers.
+**Q: What testing framework did you use?**
+A: Playwright with TypeScript
 
-## Parallel Test Execution:
-Optimize test suite execution by enabling parallel runs. This will speed up testing, especially as the number of test cases increases.
+**Q: How did you handle authentication?**
+A: Session management with API login - reusable authenticated sessions stored in memory to avoid repeated logins
 
-## Test Traceability:
-Capture Playwright traces and screenshots on test failure for easier debugging. Link them to your CI/CD pipeline or reports for better traceability.
+**Q: How are articles created for edit/delete tests?**
+A: Created via API as pre-condition in beforeEach hooks
 
-## CI/CD Integration:
-Set up the framework to run tests automatically within a CI/CD pipeline (GitHub Actions) to ensure continuous quality validation on every code change.
-How to submit the assignment
-Once you are done with the assignment, send an email with the GitHub repo URL where you have pushed your code and configured the CI/CD.
+**Q: What assertions do you use?**
+A: UI elements, text content, URL redirects, data persistence, error messages
 
+**Q: How do you generate test data?**
+A: Using @faker-js/faker for dynamic/randomized data
+
+**Q: What browsers are supported?**
+A: Chromium, Firefox, WebKit (configured in playwright.config.ts)
+
+**Q: How do you run tests in parallel?**
+A: `workers: 2` in CI, `--workers=4` CLI option
+
+**Q: Where are test reports configured?**
+A: HTML, JSON, Allure reporters in playwright.config.ts
+
+**Q: How do you capture failures?**
+A: Traces on retry, screenshots/video on failure
+
+**Q: How is CI/CD set up?**
+A: GitHub Actions workflow in .github/workflows/playwright.yml
