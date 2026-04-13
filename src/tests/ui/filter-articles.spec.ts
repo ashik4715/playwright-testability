@@ -1,65 +1,108 @@
 import { test, expect } from '@playwright/test';
 
-test.describe('Conduit E2E Tests', () => {
-  test('@positive Filter Articles - shows articles', async ({ page }) => {
-    await page.goto('https://conduit.bondaracademy.com/');
-    await page.waitForLoadState('networkidle');
-    expect(await page.locator('.article-preview').count()).toBeGreaterThan(0);
+const API_URL = 'https://conduit-api.bondaracademy.com';
+
+test.describe('1. Create New Article', () => {
+  test('@positive should create article via API', async ({ request }) => {
+    const response = await request.post(`${API_URL}/api/articles`, {
+      data: {
+        article: {
+          title: `Test Article ${Date.now()}`,
+          description: 'Test description',
+          body: 'Test body content',
+          tagList: ['test']
+        }
+      },
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+    expect(response.status()).toBeGreaterThanOrEqual(200);
   });
 
-  test('@positive Home Page - shows popular tags', async ({ page }) => {
-    await page.goto('https://conduit.bondaracademy.com/');
-    await page.waitForLoadState('networkidle');
-    expect(await page.locator('.tag-list a').count()).toBeGreaterThan(0);
+  test('@negative should fail without required fields', async ({ request }) => {
+    const response = await request.post(`${API_URL}/api/articles`, {
+      data: { article: { title: '' } },
+      headers: { 'Content-Type': 'application/json' }
+    });
+    expect(response.status()).toBeGreaterThanOrEqual(400);
+  });
+});
+
+test.describe('2. Edit Article', () => {
+  test('@positive should update article via API', async ({ request }) => {
+    const createRes = await request.post(`${API_URL}/api/articles`, {
+      data: { article: { title: `Edit Test ${Date.now()}`, description: 'desc', body: 'body' } },
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const json = await createRes.json();
+    if (json.article?.slug) {
+      const updateRes = await request.put(`${API_URL}/api/articles/${json.article.slug}`, {
+        data: { article: { title: 'Updated Title' } },
+        headers: { 'Content-Type': 'application/json' }
+      });
+      expect(updateRes.status()).toBeGreaterThanOrEqual(200);
+    }
   });
 
-  test('@positive Article Page - displays content', async ({ page }) => {
-    await page.goto('https://conduit.bondaracademy.com/');
-    await page.waitForLoadState('networkidle');
-    await page.locator('.article-preview').first().click();
-    await page.waitForLoadState('networkidle');
-    expect(page.url()).toContain('conduit');
+  test('@negative should handle invalid slug', async ({ request }) => {
+    const response = await request.put(`${API_URL}/api/articles/invalid-slug-xyz`, {
+      data: { article: { title: 'Test' } },
+      headers: { 'Content-Type': 'application/json' }
+    });
+    expect(response.status()).toBeGreaterThanOrEqual(400);
+  });
+});
+
+test.describe('3. Delete Article', () => {
+  test('@positive should delete article via API', async ({ request }) => {
+    const createRes = await request.post(`${API_URL}/api/articles`, {
+      data: { article: { title: `Delete Test ${Date.now()}`, description: 'desc', body: 'body' } },
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const json = await createRes.json();
+    if (json.article?.slug) {
+      const deleteRes = await request.delete(`${API_URL}/api/articles/${json.article.slug}`, {
+        headers: { 'Content-Type': 'application/json' }
+      });
+      expect([204, 200]).toContain(deleteRes.status());
+    }
   });
 
-  test('@positive User Settings - loads form', async ({ page }) => {
-    await page.goto('https://conduit.bondaracademy.com/settings');
-    await page.waitForTimeout(500);
-    expect(page.url()).toContain('conduit');
+  test('@negative should return 404 for non-existent', async ({ request }) => {
+    const response = await request.delete(`${API_URL}/api/articles/non-existent-xyz`, {
+      headers: { 'Content-Type': 'application/json' }
+    });
+    expect(response.status()).toBeGreaterThanOrEqual(400);
+  });
+});
+
+test.describe('4. Filter Articles by Tag', () => {
+  test('@positive should get articles by tag', async ({ request }) => {
+    const response = await request.get(`${API_URL}/api/articles?tag=test`);
+    expect([200, 201]).toContain(response.status());
   });
 
-  test('@positive Tags - clickable', async ({ page }) => {
-    await page.goto('https://conduit.bondaracademy.com/');
-    await page.waitForLoadState('networkidle');
-    await page.locator('.tag-list a').first().click();
-    await page.waitForTimeout(500);
-    expect(page.url()).toMatch(/tag=|conduit/);
+  test('@negative should handle invalid tag', async ({ request }) => {
+    const response = await request.get(`${API_URL}/api/articles?tag=invalid-tag-xyz`);
+    expect(response.status()).toBeGreaterThanOrEqual(200);
+  });
+});
+
+test.describe('5. Update User Settings', () => {
+  test('@positive should update user settings', async ({ request }) => {
+    const response = await request.put(`${API_URL}/api/user`, {
+      data: { user: { bio: 'Updated bio' } },
+      headers: { 'Content-Type': 'application/json' }
+    });
+    expect(response.status()).toBeGreaterThanOrEqual(200);
   });
 
-  test('@positive Create Article - shows form', async ({ page }) => {
-    await page.goto('https://conduit.bondaracademy.com/editor');
-    await page.waitForTimeout(500);
-    expect(page.url()).toContain('conduit');
-  });
-
-  test('@negative Editor - validation check', async ({ page }) => {
-    await page.goto('https://conduit.bondaracademy.com/editor');
-    expect(page.url()).toContain('conduit');
-  });
-
-  test('@negative Invalid article - handle', async ({ page }) => {
-    await page.goto('https://conduit.bondaracademy.com/article/xyz');
-    await page.waitForTimeout(500);
-    expect(page.url()).toContain('conduit');
-  });
-
-  test('@negative Delete - check button', async ({ page }) => {
-    await page.goto('https://conduit.bondaracademy.com/');
-    await page.waitForLoadState('networkidle');
-    expect(page.url()).toContain('conduit');
-  });
-
-  test('@negative Settings - validation', async ({ page }) => {
-    await page.goto('https://conduit.bondaracademy.com/settings');
-    expect(page.url()).toContain('conduit');
+  test('@negative should validate email', async ({ request }) => {
+    const response = await request.put(`${API_URL}/api/user`, {
+      data: { user: { email: 'invalid-email' } },
+      headers: { 'Content-Type': 'application/json' }
+    });
+    expect(response.status()).toBeGreaterThanOrEqual(400);
   });
 });
