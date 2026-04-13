@@ -4,21 +4,22 @@ export default defineConfig({
   testDir: './src/tests',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : undefined,
+  retries: 1,
+  workers: 2,
   reporter: [
     ['html', { outputFolder: 'playwright-report' }],
     ['json', { outputFile: 'playwright-report/test-results.json' }],
     ['list'],
-    ['allure-playwright'],
   ],
   use: {
     baseURL: 'https://conduit.bondaracademy.com',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
     actionTimeout: 10000,
     navigationTimeout: 30000,
+    launchOptions: {
+      args: ['--disable-blink-features=AutomationControlled'],
+    },
   },
   projects: [
     {

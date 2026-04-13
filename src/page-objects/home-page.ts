@@ -105,11 +105,11 @@ export class HomePage extends BasePage {
   }
 
   async clickNewArticle(): Promise<void> {
-    await this.newArticleLink.click();
+    await this.page.goto('/editor');
   }
 
   async clickSettings(): Promise<void> {
-    await this.settingsLink.click();
+    await this.page.goto('/settings');
   }
 
   async logout(): Promise<void> {

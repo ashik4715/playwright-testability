@@ -54,9 +54,9 @@ export class TestDataGenerator {
 }
 
 export const testUser = {
-  email: 'test@test.com',
-  username: 'testuser',
-  password: 'test',
+  email: 'artem@bondaracademy.com',
+  username: 'Artem Bondar',
+  password: 'password123',
   bio: 'Test user bio',
   image: 'https://example.com/avatar.jpg',
 };

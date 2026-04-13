@@ -1,4 +1,4 @@
-import { test as BaseTest, Page } from '@playwright/test';
+import { test as BaseTest, Page, Browser } from '@playwright/test';
 import { ApiClient } from './api-client';
 import { testUser } from '../test-data/test-data';
 
@@ -6,7 +6,6 @@ class SessionManager {
   private static instance: SessionManager;
   private apiClient: ApiClient | null = null;
   private token: string | null = null;
-  private user: { email: string; username: string; password: string } | null = null;
 
   private constructor() {}
 
@@ -22,11 +21,8 @@ class SessionManager {
     await this.apiClient.init();
   }
 
-  async getAuthenticatedSession(credentials?: {
-    email: string;
-    password: string;
-  }): Promise<{ apiClient: ApiClient; token: string }> {
-    if (this.token && this.user && this.apiClient) {
+  async getAuthenticatedSession(): Promise<{ apiClient: ApiClient; token: string }> {
+    if (this.token && this.apiClient) {
       this.apiClient.setToken(this.token);
       return { apiClient: this.apiClient, token: this.token };
     }
@@ -35,20 +31,9 @@ class SessionManager {
       await this.initialize();
     }
 
-    const creds = credentials || testUser;
-    await this.login(creds.email, creds.password);
-    return { apiClient: this.apiClient!, token: this.token! };
-  }
-
-  async login(email: string, password: string): Promise<string> {
-    if (!this.apiClient) {
-      await this.initialize();
-    }
-
-    const result = await this.apiClient!.login(email, password);
+    const result = await this.apiClient!.login(testUser.email, testUser.password);
     this.token = result.user.token;
-    this.user = { email, password, username: '' };
-    return result.user.token;
+    return { apiClient: this.apiClient!, token: this.token! };
   }
 
   async dispose(): Promise<void> {
@@ -57,15 +42,10 @@ class SessionManager {
       this.apiClient = null;
     }
     this.token = null;
-    this.user = null;
   }
 
   getToken(): string | null {
     return this.token;
-  }
-
-  getApiClient(): ApiClient | null {
-    return this.apiClient;
   }
 }
 
@@ -75,11 +55,10 @@ export const test = BaseTest.extend<{
   authenticatedPage: Page;
   apiClient: ApiClient;
 }>({
-  authenticatedPage: async ({ page }, use) => {
-    const { token } = await sessionManager.getAuthenticatedSession();
-    await page.addInitScript((tok: string) => {
-      localStorage.setItem('jwt', tok);
-    }, token);
+  authenticatedPage: async ({ page, browser }, use) => {
+    await sessionManager.getAuthenticatedSession();
+    await page.goto('https://conduit.bondaracademy.com/');
+    await page.waitForTimeout(2000);
     await use(page);
   },
   apiClient: async ({}, use) => {
