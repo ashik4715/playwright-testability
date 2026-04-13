@@ -29,6 +29,8 @@ export class ArticleEditorPage extends BasePage {
 
   async navigate(slug?: string): Promise<void> {
     const path = slug ? `/editor/${slug}` : '/editor';
+    await this.page.goto('https://conduit.bondaracademy.com/');
+    await this.page.waitForTimeout(1000);
     await super.navigate(path);
     await this.waitForPageLoad();
   }
